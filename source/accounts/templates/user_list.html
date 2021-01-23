@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block title %}
+{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+{% block menu %}
+{% endblock %}
+{% block content %}
+{% include 'partial/pagination.html' %}
+<h3 class="mb-5 mt-4" align="center">
+   <b>Список пользователей</b>
+</h3>
+{% for user in users_list %}
+    <div class="card my-2">
+        <div class="card-body">
+                <h5 class="card-title"> 'ФИО':<a href="#"> {{ user.first_name }}  {{ user.last_name }} </a></h5>
+
+          </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
