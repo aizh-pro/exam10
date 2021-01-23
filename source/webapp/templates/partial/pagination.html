@@ -1,0 +1,26 @@
+{% load i18n %}
+<div class="d-flex justify-content-center">
+    <div class="pagination mb-2">
+        <span class="step-links">
+            <a class="btn btn-primary" href="?{% if query %}{{ query }}&{% endif %}page=1">&laquo;{% trans 'Первая' %}</a>
+            {% if page_obj.has_previous %}
+                <a class="btn btn-primary"  href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.previous_page_number }}">{% trans 'Назад' %}</a>
+            {% else %}
+                <span class="btn btn-secondary disabled" aria-disabled="true">{% trans 'Назад' %}</span>
+            {% endif %}
+            <form class="current-page" method="get">
+                <label for="page">
+                    {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+                    <span class="mx-3">{% trans 'Страница' %} <input type="text" name="page" id="page" value="{{ page_obj.number }}">
+                    {% trans 'Из' %} {{ page_obj.paginator.num_pages }}</span>
+                </label>
+            </form>
+            {% if page_obj.has_next %}
+                <a class="btn btn-primary" href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.next_page_number }}">{% trans 'Далее' %}</a>
+            {% else %}
+                <span class="btn btn-secondary disabled" aria-disabled="true">{% trans 'Далее' %}</span>
+            {% endif %}
+            <a class="btn btn-primary" href="?{% if query %}{{ query }}&{% endif %}page={{ page_obj.paginator.num_pages }}">{% trans 'Последняя' %} &raquo;</a>
+        </span>
+    </div>
+</div>

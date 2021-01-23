@@ -1,0 +1,13 @@
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+{{ form.media }}
+<form action="{{ action_url }}" method="{{ form_method }}" enctype="{{ enctype }}">
+{% csrf_token %}
+  {% bootstrap_form form %}
+  {% buttons %}
+    <button type="submit" id="submit" class="btn btn-primary">
+      {{ button_text }}
+    </button>
+  {% endbuttons %}
+</form>
