@@ -19,7 +19,7 @@
 <body>
  <nav class="navbar navbar-expand-lg navbar-light mb-4" style="background-color: #e3f2fd;">
         <div class="container">
-            <a class="navbar-brand font-weight-bold" href="#">Home</a>
+            <a class="navbar-brand font-weight-bold" href="{% url 'webapp:user_list' %}">Home</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -27,28 +27,21 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mr-auto">
                 {% block navs %}{% endblock %}
-                    {% if request.user.is_authenticated %}
-                        <li class="nav-item active ml-3">
-                     <a href="{% url 'accounts:password_reset_email' %}">Сбросить пароль</a>
-                    </li>
-                 {% endif %}
+                {% if request.user.is_authenticated %}
 
-                 {% if request.user.is_authenticated %}
-                     <li class="nav-item active ml-3">
-                     <a class="nav-item ml-3" href="{% url 'accounts:logout' %}?next={{ request.get_full_path }}">Выйти</a>
-                    </li>
-                 {% else %}
-                        <li class="nav-item active ml-3">
-                            <a class="nav-link" href="{% url 'accounts:login' %}?next={{ request.get_full_path }}">Войти<span class="sr-only">(current)</span></a>
-                        <li class="menu-right">
-                        <a class="nav-link" href="{% url 'accounts:create' %}?next={{ request.get_full_path }}">Регистрация</a>
-                        </li>
-
-                 {% endif %}
-
-                     <li class="nav-item active ml-3">
-                        <a href="{% url 'webapp:outcome_list' %}">Исходящие письма</a>
-                    </li>
+                    {% block menu %}{% endblock %}
+                    <li class="nav-item active ml-3"><a class="nav-link ml-3" href="{% url 'accounts:detail' request.user.pk %}">
+                        Привет, {{ request.user.get_full_name|default:request.user.username }}
+                    </a></li>
+                {% endif %}
+                       {% block auth_menu %}
+                        {% if request.user.is_authenticated %}
+                            <li class="nav-item active ml-3"><a class="nav-link ml-3"  href="{% url 'accounts:logout' %}?next={{ request.get_full_path }}">Выйти</a></li>
+                        {% else %}
+                            <li class="nav-item active ml-3"><a class="nav-link ml-3" href="{% url 'accounts:login' %}?next={{ request.get_full_path }}">Войти</a></li>
+                            <li class="nav-item active ml-3" ><a class="nav-link ml-3"  href="{% url 'accounts:create' %}?next={{ request.get_full_path }}">Регистрация</a></li>
+                        {% endif %}
+                    {% endblock %}
 
                 </ul>
             </div>

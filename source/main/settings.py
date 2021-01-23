@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'accounts',
     'webapp',
     'widget_tweaks',
-    'bootstrap4'
+    'bootstrap4',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

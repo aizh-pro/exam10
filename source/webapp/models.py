@@ -12,26 +12,10 @@ class Message(models.Model):
     def __str__(self):
         return f'{self.sender} sent to {self.recipient}'
 
-class MessageSenderManager(models.Manager):
-    def get_messages_by_sender(self):
-        Message.objects.filter(recipient==self.request.user)
-
-# class Friend(models.Model):
-#     friends = models.ManyToManyField('self', blank=True)
-#     current_user = models.ForeignKey(get_user_model(), related_name="owner", null=True, on_delete=models.CASCADE)
-
 
 class Friend(models.Model):
-    from_user = models.ForeignKey(
-        get_user_model(),
-        on_delete=models.CASCADE,
-        related_name="friendship_sent",
-    )
-    to_user = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name="friendship_received",
-    )
+    from_user = models.ForeignKey(get_user_model(), related_name='friendship_sent', verbose_name='Приглашающий', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(get_user_model(), related_name='friendship_received', verbose_name='Принявший', on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Friendship Request"
@@ -41,4 +25,3 @@ class Friend(models.Model):
 
     def __str__(self):
         return f'{self.from_user} invited {self.to_user}'
-

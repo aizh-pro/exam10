@@ -1,50 +1,48 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.views.generic import CreateView, ListView
+from django_filters.views import FilterView
 
-from accounts.models import Profile
+from accounts.models import Profile, AuthToken
 from webapp.forms import MessageForm
 from webapp.models import Friend, Message
 
 
-# class FriendAddView(LoginRequiredMixin, View):
-#     def post(self, request, *args, **kwargs):
-#         to_user = get_object_or_404(Profile, pk=kwargs.get('pk'))
-#         friend, created = Friend.objects.get_or_create(friend=to_user, user=request.user)
-#         if created:
-#             return HttpResponse()
-#         else:
-#             return HttpResponseForbidden()
-#
-#
-# class FriendRemoveView(LoginRequiredMixin, View):
-#     def post(self, request, *args, **kwargs):
-#         to_user = get_object_or_404(Profile, pk=kwargs.get('pk'))
-#         friend = get_object_or_404(photo.likes, user=request.user)
-#         friend.delete()
-#         photo.save()
-#         return HttpResponse()
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
-class FriendAddView(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        profile = get_object_or_404(Profile, pk=kwargs.get('pk'))
-        like, created = Friend.objects.get_or_create(to_user=profile, from_user=request.user)
-        if created:
-            return HttpResponse()
+class AddFriendView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(ensure_csrf_cookie)
+    def post(self, request, pk=None):
+        to_user = get_object_or_404(User, pk=pk)
+        friends, create = Friend.objects.get_or_create(from_user=request.user, to_user=to_user)
+        if create:
+            return Response({'pk': pk})
         else:
-            return HttpResponseForbidden()
+            return Response(status=403)
 
 
-class FriendRemoveView(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        profile = get_object_or_404(Profile, pk=kwargs.get('pk'))
-        like = get_object_or_404(profile.friendship_received, from_user=request.user)
-        like.delete()
-        profile.save()
-        return HttpResponse()
+class RemoveFriendView(APIView):
+    permission_classes = [IsAuthenticated]
+
+
+    @method_decorator(ensure_csrf_cookie)
+    def delete(self, request, pk=None):
+        to_user = get_object_or_404(User, pk=pk)
+        friends = Friend.objects.filter(to_user=to_user)
+        friends.delete()
+        return Response({'pk': pk})
 
 
 class MessageCreateView(CreateView):
@@ -63,10 +61,20 @@ class MessageCreateView(CreateView):
             pk=recipient.pk)
 
 class MessageListView(ListView):
-    template_name = 'message_list.html'
+    template_name = 'outcome_message.html'
     model = Message
     context_object_name = 'messages'
     paginate_by = 5
 
     def get_queryset(self):
         return Message.objects.filter(sender=self.request.user)
+
+
+class IncomeMessageListView(FilterView):
+    template_name = 'income_messages.html'
+    model = Message
+    context_object_name = 'messages'
+    paginate_by = 5
+
+    def get_queryset(self):
+        return Message.objects.filter(recipient=self.request.user.pk)

@@ -3,8 +3,7 @@
 {% block title %}Редактировать пользователя{% endblock %}
 
 {% block menu %}
-    <li><a href="{% url "accounts:detail" user_obj.pk %}">Назад</a></li>
-    <li><a href="{% url "accounts:password_change" %}">Смена пароля</a></li>
+    <li class="nav-item active ml-3"><a class="nav-link ml-3" href="{% url "accounts:detail" user_obj.pk %}">Назад</a></li>
 {% endblock %}
 
 {% block content %}

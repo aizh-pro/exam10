@@ -1,84 +1,90 @@
-async function makeRequest(url, method='GET') {
-    let response = await fetch(url, {method});
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
-    if (response.ok) {  // нормальный ответ
-        return await response.text();
-    } else {            // ошибка
+function csrfSafeMethod(method) {
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+async function makeRequest(url, method='GET', data=undefined) {
+    let opts = {method, headers: {}};
+ console.log(method)
+    if (!csrfSafeMethod(method))
+        opts.headers['X-CSRFToken'] = getCookie('csrftoken');
+        console.log(getCookie('csrftoken'))
+
+    if (data) {
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(data);
+    }
+
+    let response = await fetch(url, opts);
+
+    if (response.ok) {
+        return await response.json();
+    } else {
         let error = new Error(response.statusText);
         error.response = response;
         throw error;
     }
 }
 
-async function onLike(event) {
+async function add(event) {
     event.preventDefault();
-    let likeBtn = event.target;
-    let url = likeBtn.href;
-
+    let addBtn = event.target;
+    let url = addBtn.href;
+    console.log(addBtn)
+    console.log(url);
     try {
-        let response = await makeRequest(url);
+        let response = await makeRequest(url, 'POST');
         console.log(response);
-        const counter = likeBtn.parentElement.getElementsByClassName('counter')[0];
-        counter.innerText = response;
+
     }
     catch (error) {
         console.log(error);
     }
 
-    likeBtn.classList.add('hidden');
-    const unlikeBtn = likeBtn.parentElement.getElementsByClassName('unlike')[0];
-    unlikeBtn.classList.remove('hidden');
+    addBtn.classList.add('hidden');
+    const removeBtn = addBtn.parentElement
+        .getElementsByClassName('remove')[0];
+    removeBtn.classList.remove('hidden');
 }
 
-async function onUnlike(event) {
+async function remove(event) {
     event.preventDefault();
-    let unlikeBtn = event.target;
-    let url = unlikeBtn.href;
+    let removeBtn = event.target;
+    let url = removeBtn.href;
 
     try {
-        let response = await makeRequest(url);
+        let response = await makeRequest(url , "DELETE");
         console.log(response);
-        const counter = unlikeBtn.parentElement.getElementsByClassName('counter')[0];
-        counter.innerText = response;
+
     }
     catch (error) {
         console.log(error);
     }
 
-    unlikeBtn.classList.add('hidden');
-    const likeBtn = unlikeBtn.parentElement.getElementsByClassName('like')[0];
-    likeBtn.classList.remove('hidden');
+    removeBtn.classList.add('hidden');
+    const addBtn = removeBtn.parentElement
+        .getElementsByClassName('add')[0];
+   addBtn.classList.remove('hidden');
 }
 
 window.addEventListener('load', function() {
-    const likeButtons = document.getElementsByClassName('like');
-    const unlikeButtons = document.getElementsByClassName('unlike');
+    const addButtons = document.getElementsByClassName('add');
+    const removeButtons = document.getElementsByClassName('remove');
 
-    for (let btn of likeButtons) {btn.onclick = onLike}
-    for (let btn of unlikeButtons) {btn.onclick = onUnlike}
-});
-
-$(document).ready(function() {
-  $('#productos').on('change', function(e) {
-     //Call the POST
-     e.preventDefault();
-     var csrftoken = getCookie('csrftoken');
-     var value = $('#productos').val();
-
-     $.ajax({
-        url: window.location.href,
-        type: "POST",
-        data: {
-            csrfmiddlewaretoken : csrftoken,
-            value : value
-        },
-        success : function(json) {
-            console.log(json);
-            drop(json);
-        },
-        error : function(xhr,errmsg,err){
-            console.log(xhr.status+": "+xhr.responseText)
-        }
-     });
-  });
+    for (let btn of addButtons) {btn.onclick = add}
+    for (let btn of removeButtons) {btn.onclick = remove}
 });

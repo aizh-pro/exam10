@@ -1,9 +1,6 @@
 from django.contrib.auth import get_user_model, authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.views import PasswordChangeView, \
-    PasswordResetView, PasswordResetConfirmView
-from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
@@ -67,6 +64,26 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     model = get_user_model()
     template_name = 'user_detail.html'
     context_object_name = 'user_obj'
+    paginate_messages_orphans = 0
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        messages, page, is_paginated = self.paginate_messages(self.object)
+        context['messages'] = messages
+        context['page_obj'] = page
+        context['is_paginated'] = is_paginated
+        return context
+
+    def paginate_messages(self, guest):
+        messages = recipient.messages.all().order_by('-created_at')
+        if messages.count() > 0:
+            paginator = Paginator(messages, orphans=self.paginate_messages_orphans)
+            page_number = self.request.GET.get('page', 1)
+            page = paginator.get_page(page_number)
+            is_paginated = paginator.num_pages > 1  # page.has_other_pages()
+            return page.object_list, page, is_paginated
+        else:
+            return messages, None, False
 
 
 class UserChangeView(UserPassesTestMixin, UpdateView):
@@ -111,12 +128,6 @@ class UserChangeView(UserPassesTestMixin, UpdateView):
             form_kwargs['files'] = self.request.FILES
         return ProfileChangeForm(**form_kwargs)
 
-        # if self.request.method == 'POST':
-        #     form = ProfileChangeForm(instance=self.object, data=self.request.POST, 
-        #                                 files=self.request.FILES)
-        # else:
-        #     form = ProfileChangeForm(instance=self.object)
-        # return form
 
 
 class UserPasswordChangeView(LoginRequiredMixin, UpdateView):
@@ -136,12 +147,6 @@ class UserPasswordChangeView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse('accounts:detail', kwargs={'pk': self.object.pk})
 
-
-# class UserPasswordChangeView(PasswordChangeView):
-#     template_name = 'user_password_change.html'
-#
-#     def get_success_url(self):
-#         return reverse('accounts:detail', kwargs={'pk': self.request.user.pk})
 
 
 class UserPasswordResetEmailView(FormView):
