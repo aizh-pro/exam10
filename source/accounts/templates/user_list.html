@@ -15,7 +15,7 @@
 {% for user in users_list %}
     <div class="card my-2">
         <div class="card-body">
-                <h5 class="card-title"> 'ФИО':<a href="#"> {{ user.first_name }}  {{ user.last_name }} </a></h5>
+                <h5 class="card-title"> 'ФИО':<a href="{% url 'accounts:detail' user.pk %}"> {{ user.first_name }}  {{ user.last_name }} </a></h5>
 
           </div>
     </div>

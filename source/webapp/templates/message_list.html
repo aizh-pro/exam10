@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load i18n %}
+{% block title %}
+{% trans 'Исходящие сообщения' %}
+{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+{% block menu %}
+{% endblock %}
+{% block content %}
+{% include 'partial/pagination.html' %}
+
+    {% load i18n %}
+<h3 class="mb-5 mt-4" align="center">
+   <b>{% trans 'Исходящие сообщения' %}</b>
+</h3>
+    <table class="table table-striped">
+
+  <tbody>
+{% for message in messages %}
+<div class="box">
+                    <p>{% trans 'Дата отправки сообщения: ' %} {{ message.created_at }}</p>
+                    <p>{% trans 'Получатель: ' %} {{ message.recipient }}</p>
+                <div class="pre" style="word-wrap:break-word">{{ message.message }}</div>
+            </div>
+        {% empty %}
+            <p>{% trans 'Нет исходящих сообщений ' %}</p>
+
+  {% endfor %}
+  </tbody>
+</table>
+    {% include 'partial/pagination.html' %}
+{% endblock %}
